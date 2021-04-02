@@ -6,5 +6,5 @@
 ## How to start?
 
 `npm i -g gatsby-cli`\
-`git clone this repo`\
-`cd this repo && gatsby develop`
+`git clone https://github.com/athelvaci/athelvaci-website.git`\
+`cd athelvaci-website && gatsby develop`
