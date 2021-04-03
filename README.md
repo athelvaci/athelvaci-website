@@ -1,7 +1,7 @@
 ## Hey!
 
 - This project is a personal website developed with `Gatsby` and app theming using `React Context`, `Bootstrap` and `Sass`
-- See me [live!](https://www.athelvaci.me/)
+- See me [live!](https://www.athelvaci.tech/)
 
 ## How to start?
 

@@ -62,13 +62,10 @@ export default ({ data }) => {
           </p>
 
           <p className="i-5">
-            I studied Computer Engineering and I am doing my master on Software Engineering at <a
-            href="http://www.boun.edu.tr/en_US"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+            I studied Computer Engineering and I am doing my master on Software Engineering at&nbsp;
+            <b>
             Bogazici University
-          </a>.
+          </b>.
             &nbsp;
           </p>
           <p className="i-5">
