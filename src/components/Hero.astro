@@ -25,8 +25,8 @@ import { site } from '../data/site';
               <img
                 src="/me-cutout.webp"
                 alt={`Portrait of ${site.title}`}
-                width="914"
-                height="960"
+                width="1048"
+                height="1180"
                 fetchpriority="high"
                 decoding="async"
                 draggable="false"
@@ -92,10 +92,10 @@ import { site } from '../data/site';
     --r: clamp(140px, min(calc(var(--stage-w) * 0.245), calc(var(--frame-h) * 0.36)), 330px);
     --title: clamp(3.2rem, calc(var(--r) * 0.43), 10rem);
     /* Where the portrait stands inside the portal, in portal radii. Keep in step with the cut-out's proportions. */
-    --fig-h: 2.329;
-    --fig-x: -0.08;
-    --fig-y: -0.03;
-    --fig-aspect: 0.9521;
+    --fig-h: 2.35;
+    --fig-x: -0.03;
+    --fig-y: -0.005;
+    --fig-aspect: 0.8881;
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) calc(var(--r) * 2.25);

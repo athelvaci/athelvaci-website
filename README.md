@@ -27,9 +27,9 @@ Copy `src/content/projects/_project-template.md` to `src/content/projects/my-pro
 
 The hero stays pinned for about one screen of scrolling. The portrait stands in the portal on the right, and as you scroll down it is twisted into the vortex and swallowed, after which the portal closes. Scrolling back up reverses it. Phones show the portal above the headline; on very short windows, and with reduced motion, nothing is pinned and the portrait simply stands in the portal.
 
-- The picture is `public/me-cutout.webp`: your photo with the background removed (transparent WebP, 914 x 960). To use another photo, remove its background with any tool that keeps soft edges around the hair and save it over this file. Crop from just above the hair down to the chest or belt. The sides and the bottom should reach past the portal's edge, because the portal's rim cuts the body off there; if the photo ends too early, stretch the shirt a little further.
+- The picture is `public/me-cutout.webp`: your photo with the background removed (transparent WebP, 1048 x 1180). To use another photo, remove its background with any tool that keeps soft edges around the hair and save it over this file. Crop from just above the hair down to the chest or belt. The sides and the bottom should reach past the portal's edge, because the portal's rim cuts the body off there; if the photo ends too early, stretch the shirt a little further.
 - If the new cut-out has other proportions, update `--fig-h`, `--fig-aspect`, `--fig-x` and `--fig-y` at the top of `.hero-stage` in `src/components/Hero.astro` (sizes are in portal radii, y counts upwards from the middle of the portal), and the `width` and `height` of the `<img>` next to it.
-- The previous portrait (dark suit) is kept in `backup/`, with the steps to switch back.
+- The previous portraits (the selfie and the dark suit) are kept in `backup/`, with the steps to switch back.
 - `src/scripts/figure.ts` draws it with a small WebGL shader. Without WebGL the plain image is scrubbed with CSS instead, and without JavaScript it just stands there.
 
 After changing the photo you may want a fresh social preview image: take a screenshot of the hero at 1200 x 630 and save it as `public/og.jpg`.
