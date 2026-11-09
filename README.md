@@ -1,10 +1,70 @@
-## Hey!
+# athelvaci.com
 
-- This project is a personal website developed with `Gatsby` and app theming using `React Context`, `Bootstrap` and `Sass`
-- See me [live!](https://www.athelvaci.tech/)
+Personal site of Ahmet Tufan Helvaci, built with [Astro](https://astro.build). A canvas portal, a periodic table of skills, a career map, a blog and a projects page. Static files only: no cookies, no trackers, no third-party requests.
 
-## How to start?
+## Run it
 
-`npm i -g gatsby-cli`\
-`git clone https://github.com/athelvaci/athelvaci-website.git`\
-`cd athelvaci-website && gatsby develop`
+Needs Node 22.23 or newer.
+
+```sh
+npm install
+npm run dev       # http://localhost:4321 (draft posts and projects are visible here)
+npm run build     # static site in dist/
+npm run preview   # serve the build locally
+```
+
+## Add a blog post
+
+Copy `src/content/blog/_post-template.md` to `src/content/blog/my-post.md` (the file name becomes the URL: `/blog/my-post/`) and fill in the front matter. Files that start with `_` are ignored, and `draft: true` hides a post from production builds.
+
+Posts from the old Gatsby site work as they are: copy a whole folder (for example `content/blog/hello-world/` with its `index.md` and images) into `src/content/blog/` and the URL stays `/blog/hello-world/`. The `title`, `date` and `description` front matter is the same.
+
+## Add a project
+
+Copy `src/content/projects/_project-template.md` to `src/content/projects/my-project.md`. Each project gets a generated cover picture, so no image is needed. To keep an old URL with capital letters, add `slug: NLP` to the front matter.
+
+## The hero portrait
+
+The hero stays pinned for about one screen of scrolling. The portrait stands in the portal on the right, and as you scroll down it is twisted into the vortex and swallowed, after which the portal closes. Scrolling back up reverses it. Phones show the portal above the headline; on very short windows, and with reduced motion, nothing is pinned and the portrait simply stands in the portal.
+
+- The picture is `public/me-cutout.webp`: your photo with the background removed (transparent WebP, 914 x 960). To use another photo, remove its background with any tool that keeps soft edges around the hair and save it over this file. Crop from just above the hair down to the chest or belt. The sides and the bottom should reach past the portal's edge, because the portal's rim cuts the body off there; if the photo ends too early, stretch the shirt a little further.
+- If the new cut-out has other proportions, update `--fig-h`, `--fig-aspect`, `--fig-x` and `--fig-y` at the top of `.hero-stage` in `src/components/Hero.astro` (sizes are in portal radii, y counts upwards from the middle of the portal), and the `width` and `height` of the `<img>` next to it.
+- The previous portrait (dark suit) is kept in `backup/`, with the steps to switch back.
+- `src/scripts/figure.ts` draws it with a small WebGL shader. Without WebGL the plain image is scrubbed with CSS instead, and without JavaScript it just stands there.
+
+After changing the photo you may want a fresh social preview image: take a screenshot of the hero at 1200 x 630 and save it as `public/og.jpg`.
+
+## Change the text
+
+| What | Where |
+| --- | --- |
+| Name, email, links, menu | `src/data/site.ts` |
+| About text, patch notes, books, series, films | `src/data/about.ts` |
+| Jobs, schools, languages | `src/data/experience.ts` |
+| Periodic table of skills | `src/data/skills.ts` |
+| Hero headline and intro | `src/components/HeroCopy.astro` |
+| Colors of the three dimensions | top of `src/styles/global.css` |
+
+A resume PDF can be added at `public/resume.pdf`; the Resume page then shows a download button. The page itself prints cleanly to two A4 pages.
+
+## Deploy to Netlify
+
+1. Replace the old Gatsby files in the repository with this project (or push it to a new branch and deploy that branch).
+2. Netlify reads `netlify.toml`: build command `npm run build`, publish folder `dist`, Node 22. These settings override the old Gatsby ones from the Netlify UI. If a build stops with a Node version error, set `NODE_VERSION` in `netlify.toml` (and `.nvmrc`) to `22.23.4` or newer.
+3. If the old site used a Gatsby plugin such as `netlify-plugin-gatsby-cache`, remove it under Site configuration > Plugins, then run "Clear cache and deploy site" once.
+4. The domain does not change.
+
+## Old links
+
+`/about/` redirects to `/#about`. `/blog/`, `/projects/` and `/resume/` all exist. `/blog/hello-world/` style URLs keep working when the post folders are copied over as described above.
+
+## Notes
+
+- The email address is assembled in the browser, so simple scrapers do not pick it up. A phone number is deliberately not on the site.
+- The portal and the portrait pause when they are off screen. Visitors who prefer reduced motion get a still portal with the portrait standing in it and no pinned scrolling.
+- Fonts (Mona Sans, JetBrains Mono, Reenie Beanie) are self-hosted through Fontsource under the SIL Open Font License.
+- The Konami code does something. Not documented further.
+
+## Company logos
+
+Logos for the Experience section live in `public/logos/` and are referenced by the `logo` field in `src/data/experience.ts`. Jobs without a `logo` show an initials tile. To add one, drop an SVG into `public/logos/` and set `logo: '/logos/name.svg'`. Logos are trademarks of their owners and are used only to identify where I worked.

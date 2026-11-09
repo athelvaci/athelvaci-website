@@ -1,0 +1,454 @@
+---
+import HeroCopy from './HeroCopy.astro';
+import { site } from '../data/site';
+---
+
+<!--
+  The hero is pinned while you scroll: the portrait stands in the portal, and scrolling swallows it (see scripts/figure.ts).
+  Layers inside the scene, back to front: portal, portrait, the lower lip of the portal's rim, and an invisible click target.
+-->
+<section class="hero" aria-label="Introduction">
+  <div class="hero-track" data-hero-track>
+    <div class="hero-frame" data-hero-frame>
+      <div class="container hero-container">
+        <div class="hero-stage" data-hero>
+          <div class="hero-layer">
+            <HeroCopy />
+          </div>
+
+          <div class="hero-scene">
+            <div class="hero-portal" aria-hidden="true">
+              <canvas class="hero-canvas" data-portal="hero"></canvas>
+            </div>
+
+            <div class="hero-figure" data-figure>
+              <img
+                src="/me-cutout.webp"
+                alt={`Portrait of ${site.title}`}
+                width="914"
+                height="960"
+                fetchpriority="high"
+                decoding="async"
+                draggable="false"
+              />
+              <canvas aria-hidden="true"></canvas>
+            </div>
+
+            <div class="hero-portal hero-portal--front" aria-hidden="true">
+              <canvas class="hero-canvas" data-portal-front></canvas>
+            </div>
+
+            <button
+              type="button"
+              class="portal-hit"
+              data-portal-hit
+              aria-label="Hop to another dimension. The color palette of the site changes."></button>
+          </div>
+
+          <p class="scroll-cue" aria-hidden="true">
+            <span class="cue-text">Scroll</span>
+            <svg class="cue-arrow" viewBox="0 0 16 22" width="14" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2v17M2 13l6 6 6-6" />
+            </svg>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .hero {
+    --vh: 100vh;
+    --pin: 100vh;
+    position: relative;
+    overflow-x: clip;
+  }
+  @supports (height: 100svh) {
+    .hero {
+      --vh: 100svh;
+      --pin: 100svh;
+    }
+  }
+  .hero {
+    --frame-h: calc(var(--vh) - var(--nav-h));
+  }
+
+  /* The track is tall; the frame inside it stays put while you scroll through the track. */
+  .hero-track {
+    height: calc(var(--frame-h) + var(--pin));
+  }
+  .hero-frame {
+    position: sticky;
+    top: var(--nav-h);
+    height: var(--frame-h);
+  }
+  .hero-container {
+    height: 100%;
+  }
+
+  .hero-stage {
+    --stage-w: min(1240px, calc(100vw - 2 * var(--gutter)));
+    --r: clamp(140px, min(calc(var(--stage-w) * 0.245), calc(var(--frame-h) * 0.36)), 330px);
+    --title: clamp(3.2rem, calc(var(--r) * 0.43), 10rem);
+    /* Where the portrait stands inside the portal, in portal radii. Keep in step with the cut-out's proportions. */
+    --fig-h: 2.329;
+    --fig-x: -0.08;
+    --fig-y: -0.03;
+    --fig-aspect: 0.9521;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) calc(var(--r) * 2.25);
+    align-items: center;
+    height: 100%;
+    padding-block: 1rem;
+  }
+
+  .hero-layer {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-title {
+    margin: 0 0 1.5rem;
+    font-size: var(--title);
+    font-weight: 800;
+    font-stretch: 122%;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+
+  .hero-title .line {
+    display: block;
+    overflow: hidden;
+    margin: 0 -0.05em -0.08em;
+    padding: 0 0.05em 0.08em;
+  }
+
+  .hero-title .line-in {
+    display: block;
+  }
+
+  .hero-lead {
+    max-width: 34ch;
+    margin-bottom: 1.6rem;
+    font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+
+  /* ---------- Scene: portal, portrait, lip ---------- */
+
+  .hero-scene {
+    --cx: calc(50% + var(--r) * 0.08);
+    --cy: calc(50% + var(--r) * 0.06);
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    height: calc(var(--r) * 2.4);
+  }
+
+  .hero-portal,
+  .hero-figure {
+    position: absolute;
+    left: calc(var(--cx) - var(--r) * 1.35);
+    top: calc(var(--cy) - var(--r) * 1.35);
+    width: calc(var(--r) * 2.7);
+    height: calc(var(--r) * 2.7);
+    pointer-events: none;
+  }
+
+  .hero-portal {
+    z-index: 2;
+  }
+  .hero-figure {
+    z-index: 3;
+  }
+  .hero-portal--front {
+    z-index: 4;
+  }
+
+  .hero-canvas {
+    width: 100%;
+    height: 100%;
+    /* The portal closes at the end of the scroll (values set by scripts/figure.ts). */
+    transform: scale(var(--ps, 1)) rotate(var(--pr, 0deg));
+    opacity: var(--po, 1);
+  }
+
+  /* Without JavaScript there is no canvas, so a plain CSS portal stands in. */
+  html:not(.js) .hero-portal:not(.hero-portal--front)::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--r) * 0.35);
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--portal-core) 0, color-mix(in oklab, var(--portal-core) 40%, var(--portal-1)) 45%, var(--portal-1) 100%);
+    box-shadow:
+      0 0 0 calc(var(--r) * 0.035) var(--portal-2),
+      0 0 calc(var(--r) * 0.35) var(--portal-1);
+  }
+
+  /* The portrait. In 'gl' mode a canvas draws it; otherwise this plain image is shown (and scrubbed with CSS). */
+  .hero-figure {
+    -webkit-mask-image:
+      linear-gradient(to bottom, #000 0 50%, transparent 50%),
+      radial-gradient(circle at 50% 50%, #000 calc(var(--r) * 1), transparent calc(var(--r) * 1 + 1px));
+    mask-image:
+      linear-gradient(to bottom, #000 0 50%, transparent 50%),
+      radial-gradient(circle at 50% 50%, #000 calc(var(--r) * 1), transparent calc(var(--r) * 1 + 1px));
+  }
+  .hero-figure[data-mode='gl'] {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .hero-figure img {
+    position: absolute;
+    display: block;
+    max-width: none;
+    width: calc(var(--r) * var(--fig-h) * var(--fig-aspect));
+    height: calc(var(--r) * var(--fig-h));
+    left: calc(50% + var(--r) * var(--fig-x) - var(--r) * var(--fig-h) * var(--fig-aspect) / 2);
+    top: calc(50% - var(--r) * (var(--fig-y) + var(--fig-h) / 2));
+    transform-origin: 50% calc(var(--r) * (var(--fig-h) / 2 + var(--fig-y)));
+    transform: rotate(calc(var(--w, 0) * var(--w, 0) * 300deg)) scale(calc(1 - var(--w, 0)));
+    opacity: calc(1 - var(--w, 0) * var(--w, 0));
+    /* The lower body dissolves as it is pulled in, like the WebGL version. */
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 calc(3% + var(--w, 0) * 34%));
+    mask-image: linear-gradient(to top, transparent 0, #000 calc(3% + var(--w, 0) * 34%));
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .hero-figure canvas {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-figure[data-mode='gl'] canvas {
+    display: block;
+  }
+  /* The image stays in the page for screen readers; it is only invisible while the canvas draws it. */
+  .hero-figure[data-mode='gl'] img {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .js .hero-figure:not([data-mode]) img {
+      opacity: 0;
+    }
+  }
+
+  /* An invisible button over the portal, so it works for keyboards and screen readers too. */
+  .portal-hit {
+    position: absolute;
+    z-index: 6;
+    left: calc(var(--cx) - var(--r));
+    top: calc(var(--cy) - var(--r));
+    width: calc(var(--r) * 2);
+    height: calc(var(--r) * 2);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    visibility: hidden;
+  }
+  [data-portal-ready] .portal-hit {
+    visibility: visible;
+  }
+  .hero-stage[data-closed] .portal-hit {
+    pointer-events: none;
+  }
+  .portal-hit:focus-visible {
+    outline: 3px dashed var(--ink);
+    outline-offset: 6px;
+    border-radius: 50%;
+  }
+
+  /* ---------- Scroll cue ---------- */
+
+  .scroll-cue {
+    position: absolute;
+    left: 0;
+    bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    color: var(--ink-soft);
+    font: 600 0.72rem/1 var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: clamp(0, calc(1 - var(--w, 0) * 6), 1);
+  }
+  .cue-text,
+  .cue-arrow {
+    animation: settle 0.7s var(--ease-out) 1.9s both;
+  }
+  .cue-arrow {
+    animation:
+      settle 0.7s var(--ease-out) 1.9s both,
+      cue-bob 1.8s ease-in-out 2.6s infinite;
+  }
+  @keyframes cue-bob {
+    50% {
+      translate: 0 5px;
+    }
+  }
+
+  /* ---------- Entrance: the portal opens, the headline rises, the portrait steps out (scripts/figure.ts) ---------- */
+
+  @keyframes portal-open {
+    from {
+      transform: scale(0.15) rotate(-160deg);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  @keyframes line-up {
+    from {
+      transform: translateY(105%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero-portal {
+    animation: portal-open 1.15s cubic-bezier(0.2, 0.9, 0.25, 1.08) both;
+  }
+
+  .hero-title .line-in {
+    animation: line-up 0.85s var(--ease-out) both;
+    animation-delay: 0.35s;
+  }
+
+  .hero-title .line:nth-child(2) .line-in {
+    animation-delay: 0.47s;
+  }
+
+  .hero-lead,
+  .hero-actions {
+    animation: settle 0.7s var(--ease-out) both;
+    animation-delay: 0.85s;
+  }
+
+  .hero-actions {
+    animation-delay: 0.95s;
+  }
+
+  /* ---------- Tablet and phone: the portal sits on top and the text goes underneath ---------- */
+  /* (Wide, short windows such as a phone held sideways keep the side-by-side layout.) */
+
+  @media (max-width: 900px) and (max-aspect-ratio: 5/4) {
+    /* The headline and intro already fill the screen, so the scroll hint would sit on top of the buttons. */
+    .scroll-cue {
+      display: none;
+    }
+
+    .hero-stage {
+      --r: clamp(96px, min(38vw, 190px, calc(var(--frame-h) * 0.17)), 190px);
+      --title: min(19vw, 6rem, calc(var(--frame-h) * 0.1));
+      grid-template-columns: minmax(0, 1fr);
+      align-content: center;
+      row-gap: 0.4rem;
+    }
+
+    .hero-scene {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .hero-layer {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .hero-title {
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-lead {
+      margin-bottom: 1.3rem;
+    }
+
+    .scroll-cue {
+      left: 50%;
+      translate: -50% 0;
+      bottom: 0.4rem;
+    }
+  }
+
+  /* Not enough height to hold the hero still, or motion is not wanted: no pinning, the portrait just stands there. */
+  @media (max-height: 520px), (max-width: 900px) and (max-height: 640px) {
+    .hero-track {
+      height: auto;
+    }
+    .hero-frame {
+      position: relative;
+      top: auto;
+      height: auto;
+      min-height: var(--frame-h);
+    }
+    .hero-stage {
+      padding-block: 2rem;
+    }
+    .hero-stage {
+      --r: clamp(120px, min(calc(var(--stage-w) * 0.245), 38vw, 190px), 190px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-track {
+      height: auto;
+    }
+    .hero-frame {
+      position: relative;
+      top: auto;
+      height: auto;
+      min-height: var(--frame-h);
+    }
+    .hero-portal,
+    .hero-title .line-in,
+    .hero-lead,
+    .hero-actions,
+    .cue-text,
+    .cue-arrow {
+      animation: none;
+    }
+    .scroll-cue {
+      display: none;
+    }
+  }
+</style>

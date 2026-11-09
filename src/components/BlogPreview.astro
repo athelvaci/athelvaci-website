@@ -1,0 +1,74 @@
+---
+import { getPosts } from '../lib/content';
+import PostRow from './PostRow.astro';
+
+const posts = (await getPosts()).slice(0, 3);
+---
+
+<section class="section band blog" id="blog" aria-labelledby="blog-title">
+  <div class="container">
+    <header class="section-head head-row">
+      <div class="head-text">
+        <h2 id="blog-title">Blog</h2>
+        <p>Notes on Java, Spring Boot, Vue.js and Azure.</p>
+      </div>
+      <a class="link all" href="/blog/">All posts</a>
+    </header>
+
+    {
+      posts.length ? (
+        <ul class="rows">
+          {posts.map((post) => (
+            <PostRow post={post} />
+          ))}
+        </ul>
+      ) : (
+        <div class="empty">
+          <h3>The first post is on its way</h3>
+          <p>
+            The <a class="link" href="/rss.xml">RSS feed</a> will pick it up the moment it lands.
+          </p>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .head-row {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+  .head-text {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .head-text p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-l);
+  }
+  .all {
+    font-weight: 700;
+    padding-bottom: 0.3rem;
+  }
+  .rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .empty {
+    display: grid;
+    gap: 0.6rem;
+    padding: 2rem;
+    border: 2px dashed var(--ink);
+    border-radius: var(--radius-l);
+  }
+  .empty h3 {
+    font-size: 1.5rem;
+  }
+  .empty p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+</style>

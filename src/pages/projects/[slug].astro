@@ -1,0 +1,107 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import GenCover from '../../components/GenCover.astro';
+import { getProjects } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+const status = { live: 'Live', building: 'In the lab', archived: 'Archived' }[data.status];
+---
+
+<Base title={data.title} description={data.description} mainClass="plain">
+  <article class="project section">
+    <div class="narrow">
+      <a class="link back" href="/projects/">All projects</a>
+      <h1>{data.title}</h1>
+      <p class="lede">{data.description}</p>
+
+      <div class="meta">
+        <span class="status">{status}</span>
+        {
+          data.url && (
+            <a class="btn" href={data.url} rel="noopener">
+              Visit site
+            </a>
+          )
+        }
+        {
+          data.repo && (
+            <a class="btn btn--ghost" href={data.repo} rel="noopener">
+              View source
+            </a>
+          )
+        }
+      </div>
+
+      <div class="cover"><GenCover seed={project.id} /></div>
+
+      {data.tags.length > 0 && (
+        <ul class="tags" aria-label="Technologies">
+          {data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .project {
+    padding-top: clamp(2.5rem, 6vw, 5rem);
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 1.6rem;
+    font-weight: 700;
+  }
+  h1 {
+    font-size: clamp(2.6rem, 1.4rem + 5vw, 5.2rem);
+    font-stretch: 122%;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+  .lede {
+    margin: 1.2rem 0 0;
+    color: var(--ink-soft);
+    font-size: var(--text-l);
+    line-height: 1.45;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 1.8rem 0 2rem;
+  }
+  .status {
+    padding: 0.28rem 0.9rem;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--mark);
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+  .cover {
+    aspect-ratio: 5 / 3;
+    max-height: 22rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-l);
+    box-shadow: 6px 6px 0 var(--shadow-c);
+  }
+  .tags {
+    margin-bottom: 2.2rem;
+  }
+</style>

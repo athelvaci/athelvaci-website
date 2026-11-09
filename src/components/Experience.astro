@@ -1,0 +1,286 @@
+---
+import PortalGlyph from './PortalGlyph.astro';
+import { jobs, schools } from '../data/experience';
+import { inline } from '../lib/format';
+
+const initials = (name: string) =>
+  name
+    .replace(/\(.*?\)/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+
+const when = (job: (typeof jobs)[number]) =>
+  `${job.start === job.end ? job.start : `${job.start} to ${job.end}`}, ${job.place}`;
+---
+
+<section class="section experience" id="experience" aria-labelledby="experience-title">
+  <div class="container exp-grid">
+    <header class="exp-head">
+      <h2 id="experience-title">Experience</h2>
+      <p>Where I have worked, newest first.</p>
+    </header>
+
+    <div class="exp-body">
+      <ol class="map" data-map>
+        {
+          jobs.map((job) => (
+            <li class="stop" data-stop>
+              <span class="node" aria-hidden="true">
+                <PortalGlyph size={34} />
+              </span>
+              <article class="job">
+                {job.current && (
+                  <p class="here hand" aria-hidden="true">
+                    you are here
+                    <svg viewBox="0 0 60 40" width="54" height="36" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 6C26 2 46 12 52 32" />
+                      <path d="M40 28l12 6 3-13" />
+                    </svg>
+                  </p>
+                )}
+                <div class="job-head">
+                  <span class={`logo${job.logo ? '' : ' logo--mono'}`} aria-hidden="true">
+                    {job.logo ? <img src={job.logo} alt="" height="28" loading="lazy" decoding="async" /> : <b>{initials(job.company)}</b>}
+                  </span>
+                  <h3>{job.company}</h3>
+                </div>
+                <p class="role">{job.role}</p>
+                <p class="when">{when(job)}</p>
+                <ul class="points">
+                  {job.points.map((point) => (
+                    <li set:html={inline(point)} />
+                  ))}
+                </ul>
+                <ul class="tags" aria-label="Technologies">
+                  {job.stack.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </article>
+            </li>
+          ))
+        }
+      </ol>
+
+      <section class="schools" aria-labelledby="schools-title">
+        <h3 id="schools-title">Where I studied</h3>
+        <ul>
+          {
+            schools.map((school) => (
+              <li>
+                <strong>{school.name}</strong>
+                <span>
+                  {school.degree}, {school.year}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+</section>
+
+<style>
+  .exp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+  .exp-head {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+    display: grid;
+    gap: 1rem;
+  }
+  .exp-head p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-l);
+    line-height: 1.45;
+    max-width: 30ch;
+  }
+
+  .map {
+    --pad: 3.5rem;
+    --node: 2.25rem;
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 var(--pad);
+    list-style: none;
+  }
+  /* The thread. It fills with color as you scroll (see timeline.ts). */
+  .map::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    bottom: 2.5rem;
+    left: calc(var(--node) / 2 - 1.5px);
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to bottom,
+      var(--accent) 0,
+      var(--accent) var(--progress, 0%),
+      var(--rule) var(--progress, 0%),
+      var(--rule) 100%
+    );
+  }
+  .stop {
+    position: relative;
+    padding-bottom: clamp(2.6rem, 5vw, 3.8rem);
+  }
+  .node {
+    position: absolute;
+    top: -0.1rem;
+    left: calc(var(--pad) * -1);
+    display: grid;
+    place-items: center;
+    width: var(--node);
+    height: var(--node);
+    border-radius: 50%;
+    background: var(--paper);
+    filter: grayscale(1);
+    opacity: 0.55;
+    transition: filter 0.4s, opacity 0.4s;
+  }
+  .stop[data-lit] .node {
+    filter: none;
+    opacity: 1;
+  }
+
+  .job {
+    position: relative;
+  }
+  .job-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  /* A light chip keeps every logo legible in all three dimensions. */
+  .logo {
+    display: grid;
+    place-items: center;
+    height: 3rem;
+    min-width: 3rem;
+    padding: 0 0.7rem;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .logo img {
+    display: block;
+    height: 1.7rem;
+    width: auto;
+    max-width: 9rem;
+    object-fit: contain; /* wide logos shrink to fit instead of stretching */
+  }
+  .logo--mono b {
+    color: #1b1b1b;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .job h3 {
+    font-size: clamp(1.7rem, 1.2rem + 1.7vw, 2.5rem);
+  }
+  .role {
+    margin: 0.4rem 0 0;
+    font-weight: 650;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    max-width: 46ch;
+  }
+  .when {
+    margin: 0.2rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+  .points {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 62ch;
+    margin: 1.1rem 0 1.2rem;
+    padding: 0;
+    list-style: none;
+  }
+  .points li {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  .points li::before {
+    content: '';
+    position: absolute;
+    left: 0.1rem;
+    top: 0.58em;
+    width: 0.52rem;
+    height: 0.52rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+
+  .here {
+    position: absolute;
+    top: -0.2rem;
+    right: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.1rem;
+    color: var(--pop-text);
+    rotate: 4deg;
+    white-space: nowrap;
+  }
+  .here svg {
+    margin-top: 0.5rem;
+  }
+
+  .schools {
+    margin-top: 0.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--ink);
+  }
+  .schools h3 {
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+  }
+  .schools ul {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .schools li {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .schools span {
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 900px) {
+    .exp-grid {
+      grid-template-columns: 1fr;
+    }
+    .exp-head {
+      position: static;
+    }
+    .map {
+      --pad: 3rem;
+    }
+    .here {
+      position: static;
+      margin-bottom: 0.4rem;
+      rotate: -2deg;
+    }
+  }
+</style>

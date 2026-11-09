@@ -1,0 +1,126 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="contact" id="contact" aria-labelledby="contact-title">
+  <div class="ring" aria-hidden="true">
+    <span class="band"></span>
+    <span class="dash"></span>
+  </div>
+  <div class="container contact-inner">
+    <h2 id="contact-title">Say hi</h2>
+    <p class="lead">Got a Java problem, a weird idea or a techno recommendation? Send it over.</p>
+    <p class="time" data-clock-wrap hidden>It&rsquo;s <strong data-clock>--:--</strong> in Amsterdam right now.</p>
+
+    <div class="actions">
+      <a class="btn" href="#contact" data-email>Email me</a>
+      <button class="btn btn--ghost" type="button" data-copy-email hidden>Copy address</button>
+      <a class="btn btn--ghost" href={site.social.linkedin} rel="me noopener">LinkedIn</a>
+      <a class="btn btn--ghost" href={site.social.github} rel="me noopener">GitHub</a>
+    </div>
+    <noscript>
+      <p class="noscript">Email: athelvaci [at] gmail [dot] com</p>
+    </noscript>
+  </div>
+</section>
+
+<style>
+  .contact {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(5rem, 11vw, 9rem);
+    background: var(--panel);
+    color: var(--on-panel);
+    border-top: 2px solid var(--ink);
+  }
+  .contact-inner {
+    position: relative;
+    z-index: 1;
+  }
+  h2 {
+    font-size: clamp(3.4rem, 1.5rem + 9vw, 9rem);
+    font-stretch: 122%;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+  }
+  .lead {
+    max-width: 24ch;
+    margin: 1.6rem 0 0.9rem;
+    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2.1rem);
+    font-weight: 650;
+    font-stretch: 106%;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  .time {
+    margin: 0 0 2rem;
+    color: color-mix(in oklab, var(--on-panel) 75%, transparent);
+  }
+  .time strong {
+    color: var(--panel-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+  .time:not([hidden]) + .actions {
+    margin-top: 0;
+  }
+  .contact .btn {
+    border-color: var(--on-panel);
+    box-shadow: 0 4px 0 color-mix(in oklab, var(--on-panel) 45%, transparent);
+  }
+  .contact .btn:hover {
+    box-shadow: 0 2px 0 color-mix(in oklab, var(--on-panel) 45%, transparent);
+  }
+  .contact .btn:active {
+    box-shadow: none;
+  }
+  .contact .btn--ghost {
+    color: var(--on-panel);
+  }
+  .contact .btn--ghost:hover {
+    background: color-mix(in oklab, var(--on-panel) 16%, transparent);
+  }
+  .noscript {
+    margin-top: 1rem;
+    color: var(--panel-accent);
+  }
+
+  /* A still portal ring in the corner closes the page the way the animated one opens it. */
+  .ring {
+    position: absolute;
+    right: clamp(-9rem, -8vw, -3rem);
+    bottom: clamp(-11rem, -9vw, -4rem);
+    width: clamp(17rem, 36vw, 32rem);
+    aspect-ratio: 1;
+  }
+  .band {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 20deg, var(--portal-2), var(--portal-1), var(--portal-3), var(--portal-1), var(--portal-2));
+    -webkit-mask: radial-gradient(circle, transparent 58%, #000 59% 78%, transparent 79%);
+    mask: radial-gradient(circle, transparent 58%, #000 59% 78%, transparent 79%);
+  }
+  .dash {
+    position: absolute;
+    inset: 26%;
+    border: 3px dashed color-mix(in oklab, var(--portal-1) 75%, transparent);
+    border-radius: 50%;
+  }
+
+  @media (max-width: 700px) {
+    .contact {
+      padding-bottom: 11rem;
+    }
+    .ring {
+      right: -5rem;
+      bottom: -8.5rem;
+      width: 15rem;
+    }
+  }
+</style>

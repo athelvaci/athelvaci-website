@@ -1,0 +1,113 @@
+---
+// A unique abstract "specimen" picture generated from a seed (the project's slug), so every
+// project gets its own cover without needing an image. Colors follow the current dimension.
+interface Props {
+  seed: string;
+}
+
+const { seed } = Astro.props;
+
+function hash(str: string): number {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^= h >>> 16) >>> 0;
+}
+
+function mulberry32(a: number) {
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rand = mulberry32(hash(seed));
+const pick = (items: string[]) => items[Math.floor(rand() * items.length)];
+
+const fills = ['var(--accent)', 'var(--sun)', 'var(--cyan)', 'var(--pop)', 'var(--violet)'];
+const bg = pick(fills);
+const rest = fills.filter((f) => f !== bg);
+
+// One big ring, a handful of loose shapes and a dotted patch.
+const ring = { x: 110 + rand() * 180, y: 80 + rand() * 80, r: 62 + rand() * 38 };
+const shapes = Array.from({ length: 6 }, () => ({
+  kind: pick(['circle', 'square', 'ring']),
+  x: 20 + rand() * 360,
+  y: 20 + rand() * 200,
+  size: 18 + rand() * 54,
+  fill: pick(rest),
+  rot: Math.round(rand() * 80),
+}));
+const dotX = rand() > 0.5 ? 24 : 300;
+const dots = Array.from({ length: 24 }, (_, i) => ({ x: dotX + (i % 6) * 14, y: 22 + Math.floor(i / 6) * 14 }));
+---
+
+<svg class="cover" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <rect width="400" height="240" style={`fill:${bg}`} />
+  {dots.map((d) => <circle cx={d.x} cy={d.y} r="2.2" class="dot" />)}
+  <circle cx={ring.x} cy={ring.y} r={ring.r} class="ring-fill" />
+  <circle cx={ring.x} cy={ring.y} r={ring.r} class="ring-line" />
+  <circle cx={ring.x} cy={ring.y} r={ring.r * 0.6} class="ring-inner" />
+  {
+    shapes.map((s) =>
+      s.kind === 'circle' ? (
+        <circle cx={s.x} cy={s.y} r={s.size / 2} class="shape" style={`fill:${s.fill}`} />
+      ) : s.kind === 'ring' ? (
+        <circle cx={s.x} cy={s.y} r={s.size / 2} class="shape-ring" />
+      ) : (
+        <rect
+          x={s.x - s.size / 2}
+          y={s.y - s.size / 2}
+          width={s.size}
+          height={s.size}
+          rx="5"
+          class="shape"
+          style={`fill:${s.fill}`}
+          transform={`rotate(${s.rot} ${s.x} ${s.y})`}
+        />
+      ),
+    )
+  }
+</svg>
+
+<style>
+  .cover {
+    width: 100%;
+    height: 100%;
+  }
+  .dot {
+    fill: var(--ink);
+    opacity: 0.45;
+  }
+  .ring-fill {
+    fill: var(--panel);
+  }
+  .ring-line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 3;
+  }
+  .ring-inner {
+    fill: none;
+    stroke: var(--panel-accent);
+    stroke-width: 5;
+    stroke-dasharray: 3 9;
+    stroke-linecap: round;
+  }
+  .shape {
+    stroke: var(--ink);
+    stroke-width: 2.5;
+  }
+  .shape-ring {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 4;
+  }
+</style>

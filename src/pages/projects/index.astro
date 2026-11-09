@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import ProjectSlot from '../../components/ProjectSlot.astro';
+import { getProjects } from '../../lib/content';
+
+const projects = await getProjects();
+---
+
+<Base title="Projects" description="Experiments and side projects by Ahmet Tufan Helvaci.">
+  <PageHead title="Projects" intro="Things I built to learn, to scratch an itch or just for fun." />
+  <section class="section list" aria-label="All projects">
+    <div class="container grid">
+      {projects.map((project) => <ProjectCard project={project} level={2} />)}
+      <ProjectSlot span={projects.length % 3 === 0 ? 3 : 1} level={2} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .list {
+    padding-top: 1rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.8rem;
+  }
+  @media (max-width: 1000px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 680px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+import DimensionSwitcher from './DimensionSwitcher.astro';
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="foot-id">
+      <p class="foot-name">{site.name}</p>
+      <p class="foot-line">{site.tagline}.</p>
+    </div>
+
+    <nav class="foot-links" aria-label="Footer">
+      <ul>
+        <li><a href="/resume/">Resume</a></li>
+        <li><a href="/rss.xml">RSS feed</a></li>
+        <li><a href={site.social.github} rel="me noopener">GitHub</a></li>
+        <li><a href={site.social.linkedin} rel="me noopener">LinkedIn</a></li>
+      </ul>
+    </nav>
+
+    <DimensionSwitcher />
+  </div>
+
+  <div class="container foot-small">
+    <p>
+      &copy; <span data-year>{year}</span>
+      {site.name}. Built with Astro, TypeScript and a canvas portal. No cookies, no trackers.
+    </p>
+    <p>
+      Inspired by a certain interdimensional cartoon. Unofficial and unaffiliated, and every pixel of the portal is original.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 3rem 2.5rem;
+    border-top: 2px solid var(--ink);
+    background: var(--paper-2);
+  }
+  .footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem 3rem;
+  }
+  .foot-name {
+    margin: 0;
+    font-weight: 800;
+    font-stretch: 116%;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  .foot-line {
+    margin: 0.15rem 0 0;
+    color: var(--ink-soft);
+  }
+  .foot-links ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .foot-links a {
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 0.14em;
+    text-underline-offset: 0.2em;
+  }
+  .foot-links a:hover {
+    background: var(--mark);
+  }
+  .foot-small {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: var(--text-s);
+    color: var(--ink-soft);
+  }
+  .foot-small p {
+    margin: 0 0 0.35rem;
+    max-width: 80ch;
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" noindex>
+  <section class="section lost">
+    <div class="container grid">
+      <div class="art" aria-hidden="true">
+        <span class="digit">4</span>
+        <div class="orb"><canvas data-portal="ambient"></canvas></div>
+        <span class="digit">4</span>
+      </div>
+
+      <div class="copy">
+        <h1>Page not found</h1>
+        <p>
+          There is no page at <code data-path>this address</code>. Check it for typos, or head back home. If you followed a link
+          from my old site, email me and I will fix it.
+        </p>
+        <div class="actions">
+          <a class="btn" href="/">Back to the home page</a>
+          <a class="btn btn--ghost" href="/blog/">Read the blog</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  document.querySelectorAll('[data-path]').forEach((el) => {
+    el.textContent = location.pathname;
+  });
+</script>
+
+<style>
+  .lost {
+    min-height: 70vh;
+    display: grid;
+    align-items: center;
+  }
+  .grid {
+    display: grid;
+    gap: 2.5rem;
+    justify-items: start;
+  }
+  @media (min-width: 960px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 4rem;
+    }
+    .art {
+      order: 2;
+    }
+  }
+  .art {
+    display: flex;
+    align-items: center;
+    gap: clamp(0rem, 1vw, 1rem);
+  }
+  .digit {
+    font-size: clamp(7rem, 3rem + 18vw, 16rem);
+    font-weight: 800;
+    font-stretch: 122%;
+    letter-spacing: -0.06em;
+    line-height: 0.8;
+  }
+  .orb {
+    width: clamp(10rem, 4rem + 22vw, 20rem);
+    aspect-ratio: 1;
+    margin-inline: clamp(-2.4rem, -3vw, -0.8rem);
+  }
+  .orb canvas {
+    width: 100%;
+    height: 100%;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 1.4rem + 3vw, 3.8rem);
+    font-stretch: 120%;
+    letter-spacing: -0.04em;
+  }
+  .copy p {
+    max-width: 46ch;
+    margin: 1rem 0 1.6rem;
+    font-size: var(--text-l);
+    line-height: 1.5;
+  }
+  code {
+    padding: 0.08em 0.4em;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper-2);
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    overflow-wrap: anywhere;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+</style>

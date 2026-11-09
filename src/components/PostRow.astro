@@ -1,0 +1,68 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, isoDate, readingTime } from '../lib/format';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  /** Heading level for the title: 3 inside a section, 2 on the blog page. */
+  level?: 2 | 3;
+}
+
+const { post, level = 3 } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+const { data, id, body } = post;
+const minutes = readingTime(body ?? '');
+---
+
+<li class="row">
+  <a href={`/blog/${id}/`}>
+    <time datetime={isoDate(data.date)}>{formatDate(data.date)}</time>
+    <div class="text" lang={data.lang}>
+      <Heading class="title">{data.title}</Heading>
+      {data.description && <p>{data.description}</p>}
+    </div>
+    <span class="meta">{minutes} min read</span>
+  </a>
+</li>
+
+<style>
+  .row {
+    border-top: 2px solid var(--ink);
+  }
+  .row:last-child {
+    border-bottom: 2px solid var(--ink);
+  }
+  a {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.5rem 2rem;
+    padding: 1.5rem 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.15s;
+  }
+  a:hover {
+    background: color-mix(in oklab, var(--mark) 55%, transparent);
+  }
+  time,
+  .meta {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .title {
+    font-size: clamp(1.4rem, 1.2rem + 0.9vw, 1.9rem);
+  }
+  p {
+    margin: 0.4rem 0 0;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 720px) {
+    a {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+      padding-inline: 0;
+    }
+  }
+</style>

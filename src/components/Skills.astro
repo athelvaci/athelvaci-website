@@ -1,0 +1,342 @@
+---
+import { elements, groups } from '../data/skills';
+import { languages } from '../data/experience';
+
+const groupLabel = Object.fromEntries(groups.map((g) => [g.id, g.label])) as Record<string, string>;
+const first = elements[0];
+---
+
+<section class="section band skills" id="skills" aria-labelledby="skills-title">
+  <div class="container">
+    <header class="section-head">
+      <h2 id="skills-title">Skills</h2>
+      <p>The periodic table of tools I reach for. Hover or tap an element to read its note.</p>
+    </header>
+
+    <div class="lab" data-skills>
+      <div class="filters" role="group" aria-label="Filter skills by group">
+        <button type="button" class="filter" data-filter="all" aria-pressed="true">All</button>
+        {
+          groups.map((group) => (
+            <button type="button" class="filter" data-filter={group.id} aria-pressed="false">
+              <span class="dot" data-group={group.id} aria-hidden="true" />
+              {group.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <aside class="readout" aria-live="polite" aria-label="Selected skill">
+        <p class="out-sym" data-out-sym>{first.sym}</p>
+        <div class="out-text">
+          <h3 data-out-name>{first.name}</h3>
+          <p class="out-group" data-out-group>{groupLabel[first.group]}</p>
+          <p class="out-note" data-out-note>{first.note}</p>
+        </div>
+      </aside>
+
+      <ul class="table">
+        {
+          elements.map((el, i) => (
+            <li>
+              <button
+                type="button"
+                class="el"
+                data-el
+                data-group={el.group}
+                data-sym={el.sym}
+                data-name={el.name}
+                data-group-label={groupLabel[el.group]}
+                data-note={el.note}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+              >
+                <span class="el-num" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <span class="el-sym" aria-hidden="true">
+                  {el.sym}
+                </span>
+                <span class="el-name">{el.name}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <section class="langs" aria-labelledby="langs-title">
+      <h3 id="langs-title">Languages I speak</h3>
+      <ul>
+        {
+          languages.map((lang) => (
+            <li>
+              <span class="lang-name">{lang.name}</span>
+              <span class="meter" aria-hidden="true">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <span class:list={['pip', { on: i < lang.dots }]} />
+                ))}
+              </span>
+              <span class="lang-level">{lang.level}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</section>
+
+<style>
+  .lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    grid-template-areas:
+      'filters readout'
+      'table readout';
+    gap: 1.4rem 2.4rem;
+    align-items: start;
+  }
+  .filters {
+    grid-area: filters;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.32rem 0.85rem;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: transparent;
+    font-size: 0.9rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .filter:hover {
+    background: color-mix(in oklab, var(--mark) 55%, transparent);
+  }
+  .filter[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--g, var(--ink-soft));
+  }
+  .filter[aria-pressed='true'] .dot {
+    border-color: var(--paper);
+  }
+
+  .dot[data-group='backend'],
+  .el[data-group='backend'] {
+    --g: var(--accent);
+  }
+  .dot[data-group='frontend'],
+  .el[data-group='frontend'] {
+    --g: var(--cyan);
+  }
+  .dot[data-group='data'],
+  .el[data-group='data'] {
+    --g: var(--pop);
+  }
+  .dot[data-group='cloud'],
+  .el[data-group='cloud'] {
+    --g: var(--sun);
+  }
+  .dot[data-group='quality'],
+  .el[data-group='quality'] {
+    --g: var(--violet);
+  }
+  .dot[data-group='other'],
+  .el[data-group='other'] {
+    --g: var(--ink-soft);
+  }
+
+  .table {
+    grid-area: table;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr));
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .el {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    width: 100%;
+    aspect-ratio: 1 / 1.1;
+    padding: 0.35rem 0.4rem 0.45rem;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--g) 30%, var(--card));
+    cursor: pointer;
+    transition: opacity 0.2s, background-color 0.15s, transform 0.12s;
+  }
+  .el:hover {
+    transform: translateY(-2px);
+  }
+  .el[aria-pressed='true'] {
+    background: var(--g);
+    color: var(--on-accent);
+    box-shadow: 4px 4px 0 var(--shadow-c);
+  }
+  .el[data-dim] {
+    opacity: 0.22;
+  }
+  .el-num {
+    justify-self: start;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .el-sym {
+    align-self: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-stretch: 118%;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .el-name {
+    display: -webkit-box;
+    max-width: 100%;
+    overflow: hidden;
+    text-align: center;
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.15;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .readout {
+    grid-area: readout;
+    position: sticky;
+    top: calc(var(--nav-h) + 1.5rem);
+    display: grid;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem 1.5rem;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-m);
+    background: var(--panel);
+    color: var(--on-panel);
+    box-shadow: 6px 6px 0 var(--shadow-c);
+  }
+  .out-sym {
+    display: grid;
+    place-items: center;
+    width: 5.2rem;
+    height: 5.2rem;
+    margin: 0;
+    border: 2px solid var(--on-panel);
+    border-radius: 12px;
+    background: var(--panel-accent);
+    color: var(--panel);
+    font-size: 2.6rem;
+    font-weight: 800;
+    font-stretch: 118%;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .out-text h3 {
+    font-size: 1.5rem;
+  }
+  .out-group {
+    margin: 0.25rem 0 0.8rem;
+    color: var(--panel-accent);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+  .out-note {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.5;
+  }
+
+  .langs {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    padding-top: 2rem;
+    border-top: 2px solid var(--ink);
+  }
+  .langs h3 {
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+  }
+  .langs ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .langs li {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .lang-name {
+    font-weight: 750;
+    font-size: 1.1rem;
+  }
+  .meter {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .pip {
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+  }
+  .pip.on {
+    background: var(--accent);
+  }
+  .lang-level {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 1000px) {
+    .lab {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'filters'
+        'readout'
+        'table';
+    }
+    /* On small screens the readout stays pinned below the nav so a tap is answered where you can see it. */
+    .readout {
+      top: calc(var(--nav-h) + 0.6rem);
+      z-index: 5;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.8rem 1rem;
+      box-shadow: 4px 4px 0 var(--shadow-c);
+    }
+    .out-sym {
+      width: 3.6rem;
+      height: 3.6rem;
+      font-size: 1.8rem;
+    }
+    .out-text h3 {
+      font-size: 1.15rem;
+    }
+    .out-group {
+      margin: 0.1rem 0 0.3rem;
+      font-size: 0.82rem;
+    }
+    .out-note {
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+  }
+</style>

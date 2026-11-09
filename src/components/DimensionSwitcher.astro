@@ -1,0 +1,79 @@
+---
+import { dimensions } from '../data/site';
+
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+
+<div class:list={['dim', { 'dim--compact': compact }]} role="group" aria-label="Choose a dimension">
+  {!compact && <span class="dim-label">Dimension</span>}
+  <div class="dim-options">
+    {
+      dimensions.map((d) => (
+        <button
+          type="button"
+          class="dim-opt"
+          data-dimension-set={d.id}
+          aria-pressed={d.id === 'mint' ? 'true' : 'false'}
+          title={`${d.label} dimension`}
+        >
+          <span class="dim-swatch" style={`background:${d.swatch}`} aria-hidden="true" />
+          <span class:list={['dim-name', { 'sr-only': compact }]}>{d.label}</span>
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .dim {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .dim-label {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .dim-options {
+    display: inline-flex;
+    gap: 0.2rem;
+    padding: 0.22rem;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--card);
+  }
+  .dim-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.22rem 0.7rem 0.22rem 0.26rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-size: 0.88rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .dim-opt:hover {
+    background: color-mix(in oklab, var(--mark) 55%, transparent);
+  }
+  .dim-opt[aria-pressed='true'] {
+    background: var(--mark);
+  }
+  .dim-swatch {
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+  }
+  .dim--compact .dim-opt {
+    padding: 0.22rem;
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getPosts } from '../../lib/content';
+import { formatDate, isoDate, readingTime } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+const minutes = readingTime(post.body ?? '');
+---
+
+<Base title={data.title} description={data.description} type="article" published={data.date} mainClass="plain">
+  <article class="post section" lang={data.lang}>
+    <header class="narrow">
+      <a class="link back" href="/blog/" lang="en">All posts</a>
+      <h1>{data.title}</h1>
+      <p class="meta">
+        <time datetime={isoDate(data.date)}>{formatDate(data.date)}</time>
+        <span>{minutes} min read</span>
+      </p>
+      {data.tags.length > 0 && (
+        <ul class="tags" aria-label="Tags">
+          {data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+    </header>
+
+    <div class="narrow prose">
+      <Content />
+    </div>
+
+    <footer class="narrow end" lang="en">
+      <p class="thanks">Thanks for reading. The <a class="link" href="/rss.xml">RSS feed</a> has new posts as they land.</p>
+      <nav class="pager" aria-label="More posts">
+        {newer && (
+          <a href={`/blog/${newer.id}/`} class="pager-link">
+            <span class="dir">Newer</span>
+            <span class="t">{newer.data.title}</span>
+          </a>
+        )}
+        {older && (
+          <a href={`/blog/${older.id}/`} class="pager-link pager-link--older">
+            <span class="dir">Older</span>
+            <span class="t">{older.data.title}</span>
+          </a>
+        )}
+      </nav>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .post {
+    padding-top: clamp(2.5rem, 6vw, 5rem);
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 1.6rem;
+    font-weight: 700;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 1.3rem + 4.8vw, 5rem);
+    font-stretch: 120%;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.2rem;
+    margin: 1.2rem 0 1rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  header {
+    margin-bottom: 2.4rem;
+  }
+  .end {
+    margin-top: 3.5rem;
+    padding-top: 1.8rem;
+    border-top: 2px solid var(--ink);
+  }
+  .thanks {
+    margin-bottom: 1.6rem;
+    color: var(--ink-soft);
+  }
+  .pager {
+    display: grid;
+    gap: 1rem;
+  }
+  .pager-link {
+    display: grid;
+    gap: 0.15rem;
+    padding: 1rem 1.2rem;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-m);
+    text-decoration: none;
+    transition: background-color 0.15s;
+  }
+  .pager-link:hover {
+    background: color-mix(in oklab, var(--mark) 55%, transparent);
+  }
+  .dir {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+  .t {
+    font-size: 1.15rem;
+    font-weight: 750;
+    font-stretch: 108%;
+    letter-spacing: -0.01em;
+  }
+</style>

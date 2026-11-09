@@ -1,0 +1,364 @@
+---
+import { existsSync } from 'node:fs';
+import Base from '../layouts/Base.astro';
+import { jobs, schools, languages } from '../data/experience';
+import { elements, groups } from '../data/skills';
+import { site } from '../data/site';
+import { plain } from '../lib/format';
+
+// Drop a file at public/resume.pdf and a download button appears here.
+const hasPdf = existsSync('public/resume.pdf');
+
+const skillGroups = groups
+  .map((group) => ({
+    label: group.label,
+    items: elements.filter((el) => el.group === group.id).map((el) => el.name),
+  }))
+  .filter((group) => group.items.length > 0);
+
+const when = (job: (typeof jobs)[number]) => (job.start === job.end ? job.start : `${job.start} to ${job.end}`);
+---
+
+<Base
+  title="Resume"
+  description="Resume of Ahmet Tufan Helvaci, a senior full-stack Java engineer in Amsterdam."
+  mainClass="plain"
+>
+  <section class="section page">
+    <div class="container">
+      <div class="toolbar no-print">
+        <p>A printable summary. For the story, scroll the home page.</p>
+        <div class="toolbar-actions">
+          <button class="btn" type="button" data-print>Print or save as PDF</button>
+          {
+            hasPdf && (
+              <a class="btn btn--ghost" href="/resume.pdf" download>
+                Download PDF
+              </a>
+            )
+          }
+        </div>
+      </div>
+
+      <article class="sheet">
+        <header class="head">
+          <h1>{site.name}</h1>
+          <p class="role">Senior full-stack Java engineer</p>
+          <p class="contact">
+            <span>{site.location}</span>
+            <a href="/" class="link">athelvaci.com</a>
+            <a href={site.social.linkedin} class="link" rel="me noopener">linkedin.com/in/athelvaci</a>
+            <a href={site.social.github} class="link" rel="me noopener">github.com/athelvaci</a>
+            <a href="/#contact" class="link" data-email data-email-text>Email</a>
+          </p>
+        </header>
+
+        <section class="block" aria-labelledby="r-profile">
+          <h2 id="r-profile">Profile</h2>
+          <p>
+            Senior full-stack Java engineer with 9+ years of experience building enterprise software in regulated environments,
+            the last five at ABN AMRO in IFRS-9 regulatory reporting. Strong in Java, Spring Boot, Vue.js, REST API design,
+            PostgreSQL and Azure/Kubernetes delivery with CI/CD and automated testing. I lead developers in my team, mentor and
+            onboard engineers and take part in technical hiring. I enjoy turning complex regulatory requirements into reliable
+            software, working closely with business stakeholders.
+          </p>
+        </section>
+
+        <section class="block" aria-labelledby="r-exp">
+          <h2 id="r-exp">Experience</h2>
+          {
+            jobs.map((job) => (
+              <div class="entry">
+                <div class="entry-head">
+                  <h3>{job.company}</h3>
+                  <p class="when">{when(job)}</p>
+                </div>
+                <p class="entry-role">
+                  {job.role}, {job.place}
+                </p>
+                <ul>
+                  {job.points.map((point) => (
+                    <li>{plain(point)}</li>
+                  ))}
+                </ul>
+                <p class="stack">{job.stack.join(', ')}</p>
+              </div>
+            ))
+          }
+        </section>
+
+        <section class="block" aria-labelledby="r-skills">
+          <h2 id="r-skills">Skills</h2>
+          <dl class="skills">
+            {
+              skillGroups.map((group) => (
+                <div>
+                  <dt>{group.label}</dt>
+                  <dd>{group.items.join(', ')}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="block" aria-labelledby="r-edu">
+          <h2 id="r-edu">Education</h2>
+          {
+            schools.map((school) => (
+              <div class="entry entry--slim">
+                <div class="entry-head">
+                  <h3>{school.name}</h3>
+                  <p class="when">{school.year}</p>
+                </div>
+                <p class="entry-role">
+                  {school.degree}, {school.place}
+                </p>
+              </div>
+            ))
+          }
+        </section>
+
+        <section class="block two" aria-label="Languages and interests">
+          <div>
+            <h2>Languages</h2>
+            <p>{languages.map((l) => `${l.name} (${l.level.toLowerCase()})`).join(', ')}</p>
+          </div>
+          <div>
+            <h2>Interests</h2>
+            <p>Road cycling, tennis, techno music</p>
+          </div>
+        </section>
+      </article>
+    </div>
+  </section>
+</Base>
+
+<script>
+  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+</script>
+
+<style>
+  .page {
+    padding-top: clamp(2rem, 5vw, 4rem);
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    max-width: 52rem;
+    margin: 0 auto 1.6rem;
+  }
+  .toolbar p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-m);
+  }
+  .toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .sheet {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.2rem);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-m);
+    background: var(--card);
+    box-shadow: 8px 8px 0 var(--shadow-c);
+  }
+  .head h1 {
+    font-size: clamp(2.2rem, 1.3rem + 3.6vw, 3.6rem);
+    font-stretch: 120%;
+    letter-spacing: -0.04em;
+  }
+  .role {
+    margin: 0.5rem 0 0.9rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.4rem;
+    margin: 0;
+    max-width: none;
+    font-size: 0.95rem;
+  }
+  .block {
+    margin-top: 2rem;
+    padding-top: 1.4rem;
+    border-top: 2px solid var(--ink);
+  }
+  .block h2 {
+    margin-bottom: 0.9rem;
+    font-size: 1.35rem;
+    font-stretch: 112%;
+    letter-spacing: -0.02em;
+  }
+  .block p {
+    max-width: 68ch;
+  }
+  .entry {
+    margin-bottom: 1.6rem;
+    break-inside: avoid;
+  }
+  .entry--slim {
+    margin-bottom: 1rem;
+  }
+  .entry-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.2rem 1rem;
+  }
+  .entry-head h3 {
+    font-size: 1.2rem;
+    letter-spacing: -0.015em;
+  }
+  .when {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .entry-role {
+    margin: 0.15rem 0 0.5rem;
+    font-weight: 650;
+  }
+  .entry ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.6rem;
+    padding-left: 1.2rem;
+    font-size: 0.98rem;
+  }
+  .entry li::marker {
+    color: var(--accent-text);
+  }
+  .stack {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+  .skills {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .skills div {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    gap: 0.2rem 1rem;
+  }
+  .skills dt {
+    font-weight: 700;
+  }
+  .skills dd {
+    margin: 0;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2rem;
+  }
+  .two p {
+    margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .skills div,
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .page {
+      padding: 0;
+    }
+    .sheet {
+      max-width: none;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .head h1 {
+      font-size: 24pt;
+    }
+    .role {
+      margin: 0.2rem 0 0.4rem;
+      font-size: 11.5pt;
+    }
+    .block {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
+    }
+    .block h2 {
+      margin-bottom: 0.45rem;
+      font-size: 12pt;
+    }
+    .entry {
+      margin-bottom: 0.8rem;
+    }
+    .entry-head h3 {
+      font-size: 10pt;
+    }
+    .entry ul {
+      gap: 0.15rem;
+      margin-bottom: 0.3rem;
+      font-size: 9.5pt;
+    }
+    .skills {
+      gap: 0.25rem;
+    }
+  }
+</style>
+
+<style is:global>
+  @media print {
+    :root:root[data-dimension] {
+      --paper: #fff;
+      --paper-2: #fff;
+      --card: #fff;
+      --ink: #111;
+      --ink-soft: #444;
+      --rule: #ccc;
+      --accent-text: #111;
+      --shadow-c: transparent;
+    }
+    @page {
+      margin: 14mm;
+    }
+    body::before,
+    .nav,
+    .footer,
+    .skip,
+    .toast,
+    .no-print {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      color: #111;
+      font-size: 10pt;
+    }
+    .section {
+      padding-block: 0;
+    }
+    .sheet a {
+      text-decoration: none;
+    }
+    .block {
+      break-inside: auto;
+    }
+    .block h2 {
+      break-after: avoid;
+    }
+  }
+</style>

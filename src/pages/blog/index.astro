@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import PostRow from '../../components/PostRow.astro';
+import { getPosts } from '../../lib/content';
+
+const posts = await getPosts();
+---
+
+<Base title="Blog" description="Notes on Java, Spring Boot, Vue.js and Azure, by Ahmet Tufan Helvaci.">
+  <PageHead title="Blog" intro="Notes on what I run into at work and on the side." />
+  <section class="section list" aria-label="All posts">
+    <div class="container">
+      {
+        posts.length ? (
+          <ul class="rows">
+            {posts.map((post) => (
+              <PostRow post={post} level={2} />
+            ))}
+          </ul>
+        ) : (
+          <div class="empty">
+            <h2>The first post is on its way</h2>
+            <p>
+              The <a class="link" href="/rss.xml">RSS feed</a> will pick it up the moment it lands.
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .list {
+    padding-top: 1rem;
+  }
+  .rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .empty {
+    display: grid;
+    gap: 0.6rem;
+    padding: 2rem;
+    border: 2px dashed var(--ink);
+    border-radius: var(--radius-l);
+  }
+  .empty h2 {
+    font-size: 1.8rem;
+  }
+  .empty p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+</style>

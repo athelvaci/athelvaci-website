@@ -1,0 +1,98 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import GenCover from './GenCover.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** Heading level for the title: 3 inside a section, 2 on the projects page. */
+  level?: 2 | 3;
+}
+
+const { project, level = 3 } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+const { data, id } = project;
+const status = { live: 'Live', building: 'In the lab', archived: 'Archived' }[data.status];
+---
+
+<article class="card">
+  <a class="card-link" href={`/projects/${id}/`}>
+    <div class="cover">
+      <GenCover seed={id} />
+      <span class:list={['status', `status--${data.status}`]}>{status}</span>
+    </div>
+    <div class="body">
+      <Heading class="title">{data.title}</Heading>
+      <p>{data.description}</p>
+      <ul class="tags">
+        {data.tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card {
+    height: 100%;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-l);
+    background: var(--card);
+    box-shadow: 6px 6px 0 var(--shadow-c);
+    overflow: hidden;
+  }
+  .card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+  }
+  .cover {
+    position: relative;
+    aspect-ratio: 5 / 3;
+    border-bottom: 2px solid var(--ink);
+  }
+  .status {
+    position: absolute;
+    left: 0.8rem;
+    bottom: 0.8rem;
+    padding: 0.12rem 0.65rem;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--card);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .status--live::before {
+    content: '';
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-right: 0.4rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.2rem 1.3rem 1.4rem;
+  }
+  .title {
+    font-size: 1.5rem;
+  }
+  p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .tags {
+    margin-top: auto;
+    padding-top: 0.4rem;
+  }
+  .card-link:hover .title {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.18em;
+  }
+</style>
