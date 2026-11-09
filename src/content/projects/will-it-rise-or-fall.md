@@ -3,6 +3,7 @@ title: Will It Rise Or Fall
 description: A game for predicting daily currency exchange rates, built for Android and the web. My graduation project.
 date: 2017-05-01
 status: archived
+repo: https://github.com/athelvaci/willitriseorfall
 tags: [Java, Spring MVC, Android, MySQL, Hibernate, Bootstrap]
 ---
 
