@@ -4,7 +4,7 @@ export const about = {
   quote: 'I love software development, and Java is the language I call home.',
 
   paragraphs: [
-    'Hello again! I’m Ahmet Tufan Helvaci, Tufan for short: a Java developer from Türkiye, now living in Amsterdam.',
+    'I’m Ahmet Tufan Helvaci, Tufan for short. I’m from Türkiye, spent the first years of my career in Istanbul and moved to Amsterdam in 2021.',
     'I’ve been writing software for nine-plus years, and I still enjoy it as much as on day one. Java is my main language, and I like working across the stack, from the backend to the screen people actually see.',
     'Today I’m at ABN AMRO. Before that I worked at Daimler, N11.com, Accenture and Credit Europe Bank, and I learned something from every one of those teams.',
     'Away from the keyboard you’ll find me on a road bike, on a tennis court or somewhere with a heavy bassline. This site is where the rest of my curiosity goes: projects, notes and experiments.',

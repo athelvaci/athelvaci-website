@@ -4,7 +4,6 @@ description: A festival companion for planning which sets to see, finding out wh
 date: 2026-04-14
 status: building
 tags: [Java, Spring Boot, PostgreSQL, Spring Security, Flyway]
-draft: true
 ---
 
 Festival line-ups are huge and the clashes are painful. RaveBestie is the backend for an app that helps you and your friends plan a festival together.

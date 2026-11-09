@@ -7,14 +7,10 @@ repo: https://github.com/athelvaci/willitriseorfall
 tags: [Java, Spring MVC, Android, MySQL, Hibernate, Bootstrap]
 ---
 
-This is a graduation project both developed as Android application and Web application.
+My graduation project at Kadir Has University, built as both an Android app and a web application. It was selected as the best design project among 18 projects that year.
 
-This project selected as a best design project among 18 projects in Kadir Has University.
+It is a prediction game. Every day, players guess whether the euro, the dollar and the pound will rise or fall, and earn points for each correct call.
 
-It is developed for users to predict stock market exchanges (euro, dollar, pound) everyday to become best predictors.
-
-User can see other users predictions, follow them and race with other user with their points.
-
-This project was successfully running on Android and Web-browsers.
+Players can see each other's predictions, follow one another and compete on points to become the best predictor.
 
 [Watch the demo on YouTube](https://www.youtube.com/watch?v=QZ6vAXX5e0E)
