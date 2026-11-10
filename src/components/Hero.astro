@@ -5,7 +5,8 @@ import { site } from '../data/site';
 
 <!--
   The hero is pinned while you scroll: the portrait stands in the portal, and scrolling swallows it (see scripts/figure.ts),
-  followed by the headline, the intro and the buttons (see scripts/feast.ts). Then the portal closes and the next section comes up.
+  followed by the headline, the intro, the buttons and the menu bar (see scripts/feast.ts). Then the portal closes, hands the
+  menu bar back and lets the About section out.
   Layers inside the scene, back to front: portal, portrait, the lower lip of the portal's rim, and an invisible click target.
 -->
 <section class="hero" aria-label="Introduction">
@@ -62,21 +63,22 @@ import { site } from '../data/site';
 <style is:global>
   .hero {
     --vh: 100vh;
-    /* How far you scroll while the hero stays put: a little over two screens for the whole show. */
-    --pin: 220vh;
+    /* How far you scroll while the hero stays put: two and a half screens for the whole show. */
+    --pin: 250vh;
     position: relative;
     overflow-x: clip;
   }
   @supports (height: 100svh) {
     .hero {
       --vh: 100svh;
-      --pin: 220svh;
+      --pin: 250svh;
     }
   }
   .hero {
     --frame-h: calc(var(--vh) - var(--nav-h));
-    /* The next section starts to come up while the portal is still closing, so there is no empty screen in between. */
-    margin-bottom: calc(var(--frame-h) * -0.5);
+    /* The next section lies exactly under the last screen of the show, ready to come out of the portal when it closes.
+       When the show is over it sits right below the menu bar, where it would be on any other page. */
+    margin-bottom: calc(var(--frame-h) * -1);
     /* The tall, empty track lies over the top of that section; only the frame itself takes clicks. */
     pointer-events: none;
   }
@@ -136,17 +138,11 @@ import { site } from '../data/site';
     grid-row: 1;
   }
 
-  /* The pieces the portal eats: letters of the headline, words of the intro and the buttons (cut up by scripts/feast.ts). */
-  .hero-title .ch,
-  .hero-lead .wd {
-    display: inline-block;
-    /* They take on the portal's light as they go in. */
-    color: color-mix(in oklab, currentColor, var(--portal-2) calc(var(--k, 0) * 100%));
-  }
+  /* The headline's letters fly off one by one (scripts/feast.ts), so its lines must not clip them. */
   .hero-stage[data-eating] .hero-title .line {
     overflow: visible;
   }
-  .hero-stage[data-eating] :is(.ch, .wd, .btn) {
+  .hero-stage[data-eating] :is(.fx-ch, .fx-wd, .btn) {
     will-change: transform, opacity;
     transition: none;
   }

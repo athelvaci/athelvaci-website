@@ -110,6 +110,10 @@ const screen = [
 </section>
 
 <style>
+  /* The opening of this section comes out of the hero portal (scripts/feast.ts); the rest fades in once it has landed. */
+  .about-more {
+    opacity: var(--emerge, 1);
+  }
   .about-top {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);

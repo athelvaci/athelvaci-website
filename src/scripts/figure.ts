@@ -23,10 +23,11 @@ const HALF = 1.35;
 const SWALLOWED_AT = 0.8;
 
 /**
- * With the hero pinned, the scroll plays in acts, each a share of the pinned distance:
- * the portrait goes under, the portal eats the rest of the hero while it grows, a short pause, and it closes.
+ * With the hero pinned, the scroll plays in acts, each a share of the pinned distance: the portrait goes under,
+ * the portal eats the rest of the hero and the menu bar while it grows, a short pause, it closes, and on its way
+ * out it gives the menu bar back and lets the About section out.
  */
-const ACTS = { portrait: 0.26, eatFrom: 0.2, eatTo: 0.72, closeFrom: 0.78, closeTo: 0.97 };
+const ACTS = { portrait: 0.24, eatFrom: 0.18, eatTo: 0.72, closeFrom: 0.76, closeTo: 0.91, emergeFrom: 0.85, emergeTo: 0.995 };
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -223,12 +224,17 @@ export function initFigure() {
 
   const feast = createFeast(stage, frame, ACTS);
 
-  const publish = (p: number, w: number, pull: number) => {
-    const closeFrom = pinned ? ACTS.closeFrom : SWALLOWED_AT - 0.02;
-    const closeTo = pinned ? ACTS.closeTo : 1;
-    const pc = clamp((p - closeFrom) / (closeTo - closeFrom));
+  /** How far the portal has closed at scroll progress `p`: `pc` runs 0 to 1, `scale` is its size from 1 down to 0. */
+  const closingAt = (p: number) => {
+    const from = pinned ? ACTS.closeFrom : SWALLOWED_AT - 0.02;
+    const to = pinned ? ACTS.closeTo : 1;
+    const pc = clamp((p - from) / (to - from));
     const closing = pc * pc * (3 - 2 * pc);
-    const scale = (1 - closing) * (1 + 0.05 * Math.sin(pc * Math.PI));
+    return { pc, scale: (1 - closing) * (1 + 0.05 * Math.sin(pc * Math.PI)) };
+  };
+
+  const publish = (p: number, w: number, pull: number) => {
+    const { pc, scale } = closingAt(p);
     setVar('--w', w.toFixed(4));
     setVar('--ps', scale.toFixed(4));
     setVar('--pr', `${(pc * pc * 200).toFixed(1)}deg`);
@@ -371,6 +377,12 @@ export function initFigure() {
   let last = 0;
   let onScreen = true;
 
+  const apply = (now: number, dt: number) => {
+    const w = swallowOf(current, introValue(now));
+    publish(current, w, feast.update(current, now / 1000, dt, pinned, closingAt(current).scale));
+    render?.(now / 1000, w);
+  };
+
   const frameLoop = (now: number) => {
     raf = 0;
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
@@ -383,9 +395,7 @@ export function initFigure() {
     pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 5);
     pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 5);
 
-    const w = swallowOf(current, introValue(now));
-    publish(current, w, feast.update(current, now / 1000, dt, pinned));
-    render?.(now / 1000, w);
+    apply(now, dt);
 
     // Only keep drawing while something is moving, or the portrait is idling in view.
     if (onScreen && !document.hidden) raf = requestAnimationFrame(frameLoop);
@@ -411,7 +421,11 @@ export function initFigure() {
   new IntersectionObserver(
     ([entry]) => {
       onScreen = entry.isIntersecting;
-      if (onScreen) wake();
+      if (onScreen) return wake();
+      // The loop stops while the hero is out of view. Jump to the final state first, so nothing is left in mid-flight:
+      // the About section's opening is part of this animation and is read long after the hero has gone.
+      current = target = scrollProgress();
+      apply(performance.now(), 0.016);
     },
     { rootMargin: '60px' },
   ).observe(track);

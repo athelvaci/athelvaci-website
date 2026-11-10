@@ -412,6 +412,24 @@ button {
 }
 
 /* =====================================================================
+   Pieces the hero portal eats or gives back (cut up by scripts/feast.ts):
+   letters of a headline, words of a paragraph
+   ===================================================================== */
+
+.fx-ch,
+.fx-wd {
+  display: inline-block;
+  /* They take on the portal's light while they are near it. */
+  color: color-mix(in oklab, currentColor, var(--portal-2) calc(var(--k, 0) * 100%));
+}
+
+/* What comes out of the portal is drawn over it, not under it. */
+.fx-out {
+  position: relative;
+  z-index: 2;
+}
+
+/* =====================================================================
    Long-form text (blog posts and project pages)
    ===================================================================== */
 

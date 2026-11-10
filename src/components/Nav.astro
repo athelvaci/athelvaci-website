@@ -41,14 +41,27 @@ const current = (href: string) => (href.startsWith('/#') ? undefined : path.star
     position: sticky;
     top: 0;
     z-index: 60;
-    background: color-mix(in oklab, var(--paper) 86%, transparent);
-    -webkit-backdrop-filter: blur(12px) saturate(1.3);
-    backdrop-filter: blur(12px) saturate(1.3);
     border-bottom: 2px solid transparent;
     transition: border-color 0.2s;
   }
+  /* The frosted bar is its own layer, so it can fade out while the hero portal has the menu (scripts/feast.ts). */
+  .nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in oklab, var(--paper) 86%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    backdrop-filter: blur(12px) saturate(1.3);
+    opacity: calc(1 - var(--eaten, 0));
+    pointer-events: none;
+  }
   .nav[data-scrolled] {
     border-bottom-color: var(--rule);
+  }
+  .nav[data-eaten],
+  .nav[data-feast] {
+    border-bottom-color: transparent;
   }
   .nav-inner {
     display: flex;

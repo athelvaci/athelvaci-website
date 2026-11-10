@@ -25,17 +25,18 @@ Copy `src/content/projects/_project-template.md` to `src/content/projects/my-pro
 
 ## The hero portrait
 
-The hero stays pinned for a little over two screens of scrolling, and the scroll plays in acts:
+The hero stays pinned for two and a half screens of scrolling, and the scroll plays in acts:
 
 1. The portrait is twisted into the vortex and swallowed.
 2. The portal grows and drifts to the middle of the screen while it eats the rest of the hero: the headline letter by letter, the intro word by word, then the buttons. Dust streams in from the edges while it feeds.
-3. A short pause, then the portal shrinks and closes while the About section comes up from below.
+3. Over the same stretch, starting at the same moment, it eats the menu bar piece by piece: the name, the links and the dimension switcher.
+4. A short pause, then the portal shrinks to a point. On its way out, and at the same time, it gives the menu bar back and lets the About section out of the closing point: the heading letter by letter, then the quote and the paragraphs.
 
-Scrolling back up reverses all of it. Phones show the portal above the headline. On very short windows nothing is pinned and only the portrait is swallowed; with reduced motion, or without JavaScript, the portrait simply stands in the portal.
+Scrolling back up reverses all of it. Phones show the portal above the headline. On very short windows nothing is pinned and only the portrait is swallowed; with reduced motion, or without JavaScript, the portrait simply stands in the portal and nothing else moves.
 
-- How long the pinned scroll is: `--pin` at the top of `.hero` in `src/components/Hero.astro` (`220vh` is 2.2 screens).
+- How long the pinned scroll is: `--pin` at the top of `.hero` in `src/components/Hero.astro` (`250vh` is 2.5 screens).
 - When each act starts and ends: `ACTS` at the top of `src/scripts/figure.ts`, as shares of the pinned scroll.
-- How the text is eaten (order, spiral, tremble, dust): `src/scripts/feast.ts`.
+- What is eaten and given back, and how (order, spiral, tremble, dust): `src/scripts/feast.ts`.
 
 - The picture is `public/me-cutout.webp`: your photo with the background removed (transparent WebP, 1048 x 1180). To use another photo, remove its background with any tool that keeps soft edges around the hair and save it over this file. Crop from just above the hair down to the chest or belt. The sides and the bottom should reach past the portal's edge, because the portal's rim cuts the body off there; if the photo ends too early, stretch the shirt a little further.
 - If the new cut-out has other proportions, update `--fig-h`, `--fig-aspect`, `--fig-x` and `--fig-y` at the top of `.hero-stage` in `src/components/Hero.astro` (sizes are in portal radii, y counts upwards from the middle of the portal), and the `width` and `height` of the `<img>` next to it.
