@@ -65,6 +65,10 @@ export const heroPortal = {
   setSwallow: (_w: number) => {},
   /** A burst of sparks and a shockwave ring. */
   pulse: () => {},
+  /** Something was just swallowed: a few sparks and a kick of speed. Strength runs from 0 to 1. */
+  gulp: (_strength: number) => {},
+  /** The hero scales the portal up while it feeds (see feast.ts); this keeps the drawing sharp at that size. */
+  setZoom: (_scale: number) => {},
 };
 
 const wobble = (a: number, t: number) =>
@@ -120,11 +124,16 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
     p: Math.random() * TAU,
   });
 
+  let zoom = 1;
+
   function resize() {
+    const sameBox = canvas.clientWidth === W && canvas.clientHeight === H;
     W = canvas.clientWidth;
     H = canvas.clientHeight;
     if (!W || !H) return;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // More pixels while the portal is scaled up, within reason: a huge canvas would cost more than it shows.
+    const base = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(base * zoom, Math.max(base, 1700 / W));
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     if (front) {
@@ -134,8 +143,10 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
     cx = W / 2;
     cy = H / 2;
     R = Math.min(W, H) / 2 / 1.35;
-    const count = Math.round(clamp(R * 2.6, 240, 820));
-    motes = Array.from({ length: count }, () => newMote(true));
+    if (!sameBox || !motes.length) {
+      const count = Math.round(clamp(R * 2.6, 240, 820));
+      motes = Array.from({ length: count }, () => newMote(true));
+    }
     draw();
     // Only now does the hero show its portal-dependent parts (the click target).
     stage?.setAttribute('data-portal-ready', '');
@@ -473,6 +484,16 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
       speedTarget = Math.max(hoverSpeed, swallowSpeed);
     };
     heroPortal.pulse = burst;
+    heroPortal.gulp = (strength: number) => {
+      emit(Math.round(5 + 13 * strength), true);
+      boost = Math.min(5, boost + 1.1 * strength);
+    };
+    heroPortal.setZoom = (scale: number) => {
+      const next = Math.max(1, Math.round(scale * 4) / 4);
+      if (next === zoom) return;
+      zoom = next;
+      resize();
+    };
   }
 
   start();

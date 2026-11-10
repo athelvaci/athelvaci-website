@@ -1,11 +1,13 @@
 // The hero portrait. It stands in the portal, and scrolling swallows it: the hero stays pinned while you scroll
 // through a tall track, and the scroll position drives a vortex that twists the cut-out and pulls it into the middle.
+// After the portrait the portal eats the rest of the hero (feast.ts), then closes.
 //
 // Three layers of fallback, so nothing is ever missing:
 //   1. WebGL2: the vortex is a fragment shader (this file).
 //   2. No WebGL: the plain <img> is scrubbed with CSS transforms, driven by the same progress value.
 //   3. No JavaScript, or reduced motion: the <img> just stands in the portal.
 
+import { createFeast } from './feast';
 import { heroPortal, readColors } from './portal';
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
@@ -17,8 +19,14 @@ const smooth = (a: number, b: number, x: number) => {
 /** Half the width of the figure canvas, in portal radii. The CSS box is 2.7 radii wide. */
 const HALF = 1.35;
 
-/** The scroll progress at which the portrait is fully swallowed; the portal then closes over the rest. */
+/** Without pinning (short windows): the scroll progress at which the portrait is swallowed; the portal then closes. */
 const SWALLOWED_AT = 0.8;
+
+/**
+ * With the hero pinned, the scroll plays in acts, each a share of the pinned distance:
+ * the portrait goes under, the portal eats the rest of the hero while it grows, a short pause, and it closes.
+ */
+const ACTS = { portrait: 0.26, eatFrom: 0.2, eatTo: 0.72, closeFrom: 0.78, closeTo: 0.97 };
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -213,8 +221,12 @@ export function initFigure() {
     stage.style.setProperty(name, value);
   };
 
-  const publish = (p: number, w: number) => {
-    const pc = clamp((p - SWALLOWED_AT + 0.02) / (1 - SWALLOWED_AT + 0.02));
+  const feast = createFeast(stage, frame, ACTS);
+
+  const publish = (p: number, w: number, pull: number) => {
+    const closeFrom = pinned ? ACTS.closeFrom : SWALLOWED_AT - 0.02;
+    const closeTo = pinned ? ACTS.closeTo : 1;
+    const pc = clamp((p - closeFrom) / (closeTo - closeFrom));
     const closing = pc * pc * (3 - 2 * pc);
     const scale = (1 - closing) * (1 + 0.05 * Math.sin(pc * Math.PI));
     setVar('--w', w.toFixed(4));
@@ -223,7 +235,8 @@ export function initFigure() {
     setVar('--po', (1 - smooth(0.85, 1, pc)).toFixed(3));
     stage.toggleAttribute('data-closed', pc > 0.4);
 
-    heroPortal.setSwallow(w);
+    // The swirl spins up for the portrait, and faster still while the portal feeds on the rest.
+    heroPortal.setSwallow(Math.max(w, pull * 1.6));
     // A burst when the portrait goes under (and again when it comes back up).
     if ((lastW < 0.92 && w >= 0.92) || (lastW >= 0.92 && w < 0.92)) {
       const now = performance.now();
@@ -235,7 +248,8 @@ export function initFigure() {
     lastW = w;
   };
 
-  const swallowOf = (p: number, intro: number) => Math.max(Math.pow(clamp(p / SWALLOWED_AT), 1.2), intro);
+  const swallowOf = (p: number, intro: number) =>
+    Math.max(Math.pow(clamp(p / (pinned ? ACTS.portrait : SWALLOWED_AT)), 1.2), intro);
 
   // ---------- WebGL ----------
 
@@ -370,7 +384,7 @@ export function initFigure() {
     pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 5);
 
     const w = swallowOf(current, introValue(now));
-    publish(current, w);
+    publish(current, w, feast.update(current, now / 1000, dt, pinned));
     render?.(now / 1000, w);
 
     // Only keep drawing while something is moving, or the portrait is idling in view.
@@ -390,6 +404,7 @@ export function initFigure() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', () => {
     measureLayout();
+    feast.measure();
     onScroll();
   });
 
