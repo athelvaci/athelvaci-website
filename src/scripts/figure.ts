@@ -24,10 +24,11 @@ const SWALLOWED_AT = 0.8;
 
 /**
  * With the hero pinned, the scroll plays in acts, each a share of the pinned distance: the portrait goes under,
- * the portal eats the rest of the hero and the menu bar while it grows, a short pause, it closes, and on its way
- * out it gives the menu bar back and lets the About section out.
+ * the portal eats the rest of the hero and the menu bar while it grows, a short pause, then it shrinks until it is
+ * the size of the logo in the menu bar (closeTo) and flies up to become it, while it gives the menu bar back and
+ * lets the About section out.
  */
-const ACTS = { portrait: 0.24, eatFrom: 0.18, eatTo: 0.72, closeFrom: 0.76, closeTo: 0.91, emergeFrom: 0.85, emergeTo: 0.995 };
+const ACTS = { portrait: 0.24, eatFrom: 0.18, eatTo: 0.72, closeFrom: 0.76, closeTo: 0.88, emergeFrom: 0.85, emergeTo: 0.995 };
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -224,21 +225,27 @@ export function initFigure() {
 
   const feast = createFeast(stage, frame, ACTS);
 
-  /** How far the portal has closed at scroll progress `p`: `pc` runs 0 to 1, `scale` is its size from 1 down to 0. */
+  /**
+   * How far the portal has closed at scroll progress `p`: `pc` runs 0 to 1, `scale` is its size, from 1 downwards.
+   * Pinned, it does not shrink to nothing: it stops at the size of the logo in the menu bar, which then takes over.
+   */
   const closingAt = (p: number) => {
     const from = pinned ? ACTS.closeFrom : SWALLOWED_AT - 0.02;
     const to = pinned ? ACTS.closeTo : 1;
     const pc = clamp((p - from) / (to - from));
     const closing = pc * pc * (3 - 2 * pc);
-    return { pc, scale: (1 - closing) * (1 + 0.05 * Math.sin(pc * Math.PI)) };
+    const floor = pinned ? feast.logoScale() : 0;
+    return { pc, scale: floor + (1 - floor) * (1 - closing) * (1 + 0.05 * Math.sin(pc * Math.PI)) };
   };
 
   const publish = (p: number, w: number, pull: number) => {
     const { pc, scale } = closingAt(p);
     setVar('--w', w.toFixed(4));
-    setVar('--ps', scale.toFixed(4));
+    setVar('--ps', scale.toFixed(5));
     setVar('--pr', `${(pc * pc * 200).toFixed(1)}deg`);
-    setVar('--po', (1 - smooth(0.85, 1, pc)).toFixed(3));
+    // Without pinning the portal fades away as it closes. Pinned, it hands over to the logo at the very end instead.
+    const fade = pinned ? smooth(ACTS.closeTo - 0.004, ACTS.closeTo + 0.008, p) : smooth(0.85, 1, pc);
+    setVar('--po', (1 - fade).toFixed(3));
     stage.toggleAttribute('data-closed', pc > 0.4);
 
     // The swirl spins up for the portrait, and faster still while the portal feeds on the rest.

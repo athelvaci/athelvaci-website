@@ -3,12 +3,13 @@
 // the menu bar is eaten alongside, piece by piece, over the same stretch. Each piece trembles, leans towards the
 // portal, lets go and spirals in, while specks of dust stream in from the edges of the screen.
 //
-// Then the portal closes, and on its way out it gives things back: the menu bar flies up to its place again, and the
-// About section comes out of the closing point, its heading letter by letter.
+// Then the portal closes, but it does not vanish. It shrinks until it is the size of the logo in the menu bar, your
+// name comes out beside it, and the two fly up together and settle in the menu bar: the portal is the logo. On the
+// way it gives the rest of the menu back, and the About section comes out of it, its heading letter by letter.
 //
 // Everything follows the scroll position, so scrolling back up plays it all in reverse.
 
-import { heroPortal, readColors } from './portal';
+import { heroPortal, LOGO_WEIGHT, readColors } from './portal';
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
 const smooth = (a: number, b: number, x: number) => {
@@ -47,6 +48,8 @@ interface Piece {
   /** For the menu bar: the scroll progress at which the piece starts its way back. */
   back: number;
   big: boolean;
+  /** The name and logo in the menu bar. It does not come back like the other pieces: the portal itself becomes it. */
+  brand: boolean;
   /** A link or a button (or something holding one). While it is inside the portal it cannot be tabbed to. */
   focusable: boolean;
   /** Letters and small things tumble on the way; blocks of text travel straight. */
@@ -89,6 +92,11 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
   const home = { x: 0, y: 0 }; // where the portal sits at rest
   const mid = { x: 0, y: 0 }; // the middle of the screen, where it ends up
   let navHomeX = 0; // the portal's resting place, measured along the menu bar
+
+  // The logo in the menu bar: a small live portal (its mark) with the name next to it.
+  const mark = header?.querySelector<HTMLElement>('[data-brand-mark]') ?? null;
+  const nameEl = header?.querySelector<HTMLElement>('[data-brand-name]') ?? null;
+  const logo = { x: 0, y: 0, r: 0 }; // centre of the mark inside the menu bar, and its radius
   let radius = 1;
   let maxScale = 1.6;
 
@@ -114,6 +122,7 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
       start: 1,
       back: 2,
       big: options.big ?? false,
+      brand: false,
       focusable: el.matches('a, button') || !!el.querySelector('a, button'),
       tumble: options.tumble ?? true,
       shown: true,
@@ -246,6 +255,13 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
     // It grows until it nearly fills the screen: a bit taller than the frame, but never wider than the window.
     maxScale = clamp(Math.min(f.height * 0.58, f.width * 0.52) / radius, 1.15, 2.2);
     navHomeX = header ? p.left + p.width / 2 - header.getBoundingClientRect().left : 0;
+    if (header && mark && mark.getClientRects().length) {
+      const h = header.getBoundingClientRect();
+      const m = mark.getBoundingClientRect();
+      logo.x = m.left + m.width / 2 - h.left;
+      logo.y = m.top + m.height / 2 - h.top;
+      logo.r = mark.offsetWidth / 2;
+    } else logo.r = 0;
 
     measureKerning();
     for (const piece of pieces) {
@@ -294,7 +310,9 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
     // section start together and land together, so on the way back up they are also pulled in together.
     const span = emergeTo - OUT_FLIGHT - emergeFrom;
     nav.forEach((piece, i) => {
-      piece.back = emergeFrom + span * (nav.length > 1 ? i / (nav.length - 1) : 0);
+      piece.brand = logo.r > 0 && piece.el.contains(mark);
+      // The name and logo have their own way home (see update()), so they never take the ordinary one.
+      piece.back = piece.brand ? 2 : emergeFrom + span * (nav.length > 1 ? i / (nav.length - 1) : 0);
     });
 
     // About: the heading first, in reading order, then the quote and the paragraphs.
@@ -411,6 +429,20 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
     if (header.inert !== away) header.inert = away;
   }
 
+  // The name in the menu bar comes out from behind the logo: 0 is hidden, 1 is in place.
+  let nameWritten = '';
+  function setName(shown: number) {
+    if (!nameEl) return;
+    const text = shown >= 0.999 ? '' : shown.toFixed(3);
+    if (text === nameWritten) return;
+    nameWritten = text;
+    nameEl.style.opacity = text;
+    nameEl.style.transform = text ? `translateX(${((shown - 1) * 22).toFixed(1)}px) scale(${(0.7 + 0.3 * shown).toFixed(3)})` : '';
+  }
+
+  /** How small the hero portal gets before the logo takes over: the size of the logo, as a share of its full size. */
+  const logoScale = () => (logo.r > 0 ? logo.r / (radius * maxScale) : 0);
+
   /** Puts everything back as if the page had just loaded (used when the hero is not pinned). */
   function rest() {
     setVar('--sx', '0px');
@@ -421,6 +453,8 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
     frame.removeAttribute('data-gone');
     if (layer?.inert) layer.inert = false;
     setNav(0, false);
+    setName(1);
+    heroPortal.setWeight(1);
     header?.removeAttribute('data-feast');
     setAboutRest(1);
     for (const piece of pieces) {
@@ -454,6 +488,8 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
     setVar('--sy', `${(cy - home.y).toFixed(1)}px`);
     setVar('--ss', scale.toFixed(4));
     heroPortal.setZoom(scale);
+    // As it shrinks towards the size of the logo its rim is drawn heavier, so it turns into the logo and not into a smudge.
+    if (logo.r > 0) heroPortal.setWeight(1 + (LOGO_WEIGHT - 1) * (1 - smooth(logo.r * 1.15, logo.r * 7, hole)));
 
     // Where things are on screen right now. The portal's centre is the one point everything flies to or from.
     const rects = new Map<HTMLElement, DOMRect>();
@@ -509,6 +545,30 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
 
       // ----- Hero and menu bar: into the portal (and, for the menu bar, back out) -----
       const isNav = piece.kind === 'nav';
+
+      // ----- The name and logo: the portal, now the size of the logo, becomes it -----
+      // The hero portal fades out and the real logo fades in at the same spot and size; the name slides out from
+      // behind it; then the two travel up to the menu bar together.
+      const handOver = acts.closeTo - 0.004;
+      if (piece.brand && !menuOpen && p >= handOver) {
+        const appear = smooth(handOver, acts.closeTo + 0.008, p);
+        const go = clamp((p - (acts.closeTo + 0.03)) / (acts.emergeTo - 0.012 - (acts.closeTo + 0.03)));
+        // Up first, then sideways along the menu bar: a curve that keeps clear of the About text coming out below.
+        const up = 1 - Math.pow(1 - go, 2.6);
+        const along = go * go * (3 - 2 * go);
+        const mx = a.left + logo.x;
+        const my = a.top + logo.y;
+        const dx = (px - mx) * (1 - along);
+        const dy = (py - my) * (1 - up);
+        setEaten(piece, false);
+        setName(smooth(acts.closeTo + 0.004, acts.closeTo + 0.04, p));
+        edible++;
+        navCount++;
+        navWay += 1 - up;
+        write(piece, go >= 1 ? restTransform(piece) : `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`, appear, 0);
+        continue;
+      }
+      if (piece.brand) setName(1);
       let t = clamp((p - piece.start) / (isNav ? NAV_FLIGHT : FLIGHT));
       if (isNav) t = menuOpen ? 0 : clamp(t - clamp((p - piece.back) / OUT_FLIGHT));
       const f = Math.pow(t, 2.3); // reluctant at first, then it cannot hold on
@@ -600,5 +660,5 @@ export function createFeast(stage: HTMLElement, frame: HTMLElement, acts: FeastA
   window.setTimeout(measure, 2000);
   document.fonts?.addEventListener?.('loadingdone', measure);
 
-  return { update, measure };
+  return { update, measure, logoScale };
 }

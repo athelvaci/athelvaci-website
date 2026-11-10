@@ -30,7 +30,9 @@ The hero stays pinned for two and a half screens of scrolling, and the scroll pl
 1. The portrait is twisted into the vortex and swallowed.
 2. The portal grows and drifts to the middle of the screen while it eats the rest of the hero: the headline letter by letter, the intro word by word, then the buttons. Dust streams in from the edges while it feeds.
 3. Over the same stretch, starting at the same moment, it eats the menu bar piece by piece: the name, the links and the dimension switcher.
-4. A short pause, then the portal shrinks to a point. On its way out, and at the same time, it gives the menu bar back and lets the About section out of the closing point: the heading letter by letter, then the quote and the paragraphs.
+4. A short pause, then the portal shrinks, but it does not vanish: it stops at the size of the logo in the menu bar, your name comes out beside it, and the two fly up and settle in the menu bar. The portal is the logo. On the way it gives the rest of the menu back and lets the About section out: the heading letter by letter, then the quote and the paragraphs.
+
+The logo in the menu bar is that same portal, small and alive, on every page (`data-portal="logo"` in `src/components/Nav.astro`).
 
 Scrolling back up reverses all of it. Phones show the portal above the headline. On very short windows nothing is pinned and only the portrait is swallowed; with reduced motion, or without JavaScript, the portrait simply stands in the portal and nothing else moves.
 

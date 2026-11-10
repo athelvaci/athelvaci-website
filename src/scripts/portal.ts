@@ -69,18 +69,23 @@ export const heroPortal = {
   gulp: (_strength: number) => {},
   /** The hero scales the portal up while it feeds (see feast.ts); this keeps the drawing sharp at that size. */
   setZoom: (_scale: number) => {},
+  /** How heavy the rim is drawn. 1 is normal; more keeps it visible when the portal is shrunk to the size of the logo. */
+  setWeight: (_weight: number) => {},
 };
+
+/** The rim of the small portal in the menu bar, drawn much heavier than the big one so it still reads at that size. */
+export const LOGO_WEIGHT = 2.9;
 
 const wobble = (a: number, t: number) =>
   1 + 0.015 * Math.sin(a * 5 + t * 1.6) + 0.01 * Math.sin(a * 8 - t * 2.2) + 0.006 * Math.sin(a * 13 + t * 3);
 
 export function initPortals() {
   document.querySelectorAll<HTMLCanvasElement>('canvas[data-portal]').forEach((canvas) => {
-    createPortal(canvas, canvas.dataset.portal === 'hero');
+    createPortal(canvas, canvas.dataset.portal === 'hero', canvas.dataset.portal === 'logo');
   });
 }
 
-function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
+function createPortal(canvas: HTMLCanvasElement, interactive: boolean, mini = false) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -125,6 +130,7 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
   });
 
   let zoom = 1;
+  let weight = mini ? LOGO_WEIGHT : 1;
 
   function resize() {
     const sameBox = canvas.clientWidth === W && canvas.clientHeight === H;
@@ -144,12 +150,13 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
     cy = H / 2;
     R = Math.min(W, H) / 2 / 1.35;
     if (!sameBox || !motes.length) {
-      const count = Math.round(clamp(R * 2.6, 240, 820));
+      const count = mini ? 36 : Math.round(clamp(R * 2.6, 240, 820));
       motes = Array.from({ length: count }, () => newMote(true));
     }
     draw();
-    // Only now does the hero show its portal-dependent parts (the click target).
+    // Only now does the hero show its portal-dependent parts (the click target), and the logo drop its plain stand-in.
     stage?.setAttribute('data-portal-ready', '');
+    if (mini) canvas.parentElement?.setAttribute('data-portal-ready', '');
   }
 
   function rimPath(g2: CanvasRenderingContext2D, scale: number, phase = 0) {
@@ -236,21 +243,21 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
   // The rim: an ink outline, a coloured band and a bright inner edge.
   function drawRim(g2: CanvasRenderingContext2D, front = false) {
     const { c1, c2, c3, edge } = colors;
-    rimPath(g2, 1.035);
-    g2.lineWidth = Math.max(2, R * 0.014);
+    rimPath(g2, 1 + 0.035 * weight);
+    g2.lineWidth = mini ? 1.4 : Math.max(2, R * 0.014 * weight);
     g2.strokeStyle = rgba(edge, 0.9);
     g2.stroke();
 
     if (!front) {
       // A soft glow around the rim. On the front lip it would only tint the figure, so it is skipped there.
       rimPath(g2, 1);
-      g2.lineWidth = R * 0.11;
+      g2.lineWidth = R * 0.11 * weight;
       g2.strokeStyle = rgba(c2, 0.22);
       g2.stroke();
     }
 
     rimPath(g2, 1);
-    g2.lineWidth = R * 0.05;
+    g2.lineWidth = R * 0.05 * weight;
     const conic = (g2 as CanvasRenderingContext2D & { createConicGradient?: (a: number, x: number, y: number) => CanvasGradient }).createConicGradient;
     if (conic) {
       const cg = conic.call(g2, t * 0.8, cx, cy);
@@ -265,8 +272,8 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
     }
     g2.stroke();
 
-    rimPath(g2, 0.972, 0.6);
-    g2.lineWidth = Math.max(1, R * 0.014);
+    rimPath(g2, 1 - 0.028 * weight, 0.6);
+    g2.lineWidth = Math.max(1, R * 0.014 * weight);
     g2.strokeStyle = 'rgba(255,255,255,0.8)';
     g2.stroke();
   }
@@ -487,6 +494,9 @@ function createPortal(canvas: HTMLCanvasElement, interactive: boolean) {
     heroPortal.gulp = (strength: number) => {
       emit(Math.round(5 + 13 * strength), true);
       boost = Math.min(5, boost + 1.1 * strength);
+    };
+    heroPortal.setWeight = (value: number) => {
+      weight = value;
     };
     heroPortal.setZoom = (scale: number) => {
       const next = Math.max(1, Math.round(scale * 4) / 4);

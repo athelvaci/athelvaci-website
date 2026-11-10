@@ -10,8 +10,12 @@ const current = (href: string) => (href.startsWith('/#') ? undefined : path.star
 <header class="nav" data-nav>
   <div class="container nav-inner">
     <a class="brand" href="/" aria-label={`${site.title}, home`}>
-      <PortalGlyph size={34} />
-      <span>{site.title}</span>
+      {/* The logo is a small live portal (scripts/portal.ts). The drawn glyph stands in until it runs, or if it cannot. */}
+      <span class="brand-mark" data-brand-mark>
+        <PortalGlyph size={34} />
+        <canvas data-portal="logo" aria-hidden="true"></canvas>
+      </span>
+      <span class="brand-name" data-brand-name>{site.title}</span>
     </a>
 
     <button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-controls="site-menu">
@@ -79,6 +83,30 @@ const current = (href: string) => (href.startsWith('/#') ? undefined : path.star
     font-size: 1.12rem;
     letter-spacing: -0.02em;
     text-decoration: none;
+  }
+  .brand-mark {
+    position: relative;
+    flex: none;
+    display: grid;
+    width: 34px;
+    height: 34px;
+  }
+  /* The canvas is bigger than the mark: the portal's rim sits on the mark's edge and its glow spills over. */
+  .brand-mark canvas {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(34px * 1.35);
+    height: calc(34px * 1.35);
+    max-width: none;
+    translate: -50% -50%;
+    pointer-events: none;
+  }
+  .brand-mark[data-portal-ready] :global(.glyph) {
+    opacity: 0;
+  }
+  .brand-name {
+    display: inline-block;
   }
   .menu {
     display: flex;
